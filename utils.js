@@ -1,6 +1,6 @@
 // Utility functions we'll use in main file
 
-function calcRookMov (currentIndex) {
+function calcRookMov(currentIndex) {
     let vSqrsAbove = [];
     let vSqrsBelow = [];
     let hSqrsLeft = [];
@@ -25,7 +25,7 @@ function calcRookMov (currentIndex) {
     }
 }
 
-function calcBishopMov (currentIndex) {
+function calcBishopMov(currentIndex) {
     let trSqrs = [];  // topRight Squares
     let brSqrs = [];  // bottomRight Squares
     let tlSqrs = [];  // topLeft Squares
@@ -62,7 +62,14 @@ function calcBishopMov (currentIndex) {
     }
     if (l < 64 && l % 8 === 0) { blSqrs.push(l); }
 
-    return [...trSqrs, ...brSqrs, ...tlSqrs, ...blSqrs].filter(s => s !== currentIndex) // remove the current square itself from the list
+    return {
+        trSqrs: trSqrs.filter(s => s !== currentIndex), // filter is to remove the current square itself
+        brSqrs: brSqrs.filter(s => s !== currentIndex),
+        tlSqrs: tlSqrs.filter(s => s !== currentIndex),
+        blSqrs: blSqrs.filter(s => s !== currentIndex)
+    };
+
+    // return [...trSqrs, ...brSqrs, ...tlSqrs, ...blSqrs].filter(s => s !== currentIndex) // remove the current square itself from the list
 }
 
 function calcKingMov(currentIndex) {
@@ -84,7 +91,7 @@ function calcKingMov(currentIndex) {
     return sqrs;
 }
 
-function calcKnightMov (currentIndex) {
+function calcKnightMov(currentIndex) {
     const squares = [];
     const row = Math.floor(currentIndex / 8);
     const col = currentIndex % 8;
@@ -111,11 +118,11 @@ function calcKnightMov (currentIndex) {
     return squares;
 }
 
-function calcPawnMov (currentIndex, side) {
+function calcPawnMov(currentIndex, side) {
     const sqrs = [];
     const row = Math.floor(currentIndex / 8);
 
-    if(side == 'w') {
+    if (side == 'w') {
         if (row > 0) { sqrs.push(currentIndex - 8); } // Check for squares above
     } else {
         if (row < 7) { sqrs.push(currentIndex + 8); } // Check for squares below
@@ -123,7 +130,7 @@ function calcPawnMov (currentIndex, side) {
     return sqrs
 }
 
-function calcPawnMov2Steps (currentIndex, side) {
+function calcPawnMov2Steps(currentIndex, side) {
     const sqrs = [];
     const row = Math.floor(currentIndex / 8);
 
@@ -142,7 +149,7 @@ function calcPawnMov2Steps (currentIndex, side) {
     return sqrs;
 }
 
-function calcPawnCapture (currentIndex, side) {
+function calcPawnCapture(currentIndex, side) {
     const sqrs = [];
     const row = Math.floor(currentIndex / 8);
     const col = currentIndex % 8;
@@ -153,55 +160,28 @@ function calcPawnCapture (currentIndex, side) {
     return sqrs;
 }
 
-
-
-
-function removeBlockedSquares(boardIndexes, boardArr) {
-    const result = [...boardIndexes]; // Create a copy of the provided array
-
-    for (let i = 0; i < boardIndexes.length; i++) {
-        const index = boardIndexes[i];
-        if (boardArr[index] !== 0) { // Check if the square is occupied
-            result.splice(0, i + 1); // Remove occupied squares and all squares before them
+function removeBlockedSquares(sideSqrs) {
+    // This is checking for piece blockages at all sides of the rooks movement
+    for (let i = 0; i < sideSqrs.length; i++) { // side squares
+        const index = sideSqrs[i];
+        if (board.boardArr[index] !== 0) { // Check if the square is occupied
+            sideSqrs.splice(i + 1); // Remove all squares after the occupied square
             break; // Stop checking further
         }
     }
-
-    return result;
 }
 
 const getPossibleMoves = (pieceType, currentIndex) => {
     let possibleDestinations = [];  // Calculate possible destination indices
 
     if (pieceType[1] == 'R') { // If it's a Rook
-        
-        let tempDestinations = calcRookMov(currentIndex)
-        let leftSqrs = tempDestinations.leftSqrs
-        let rightSqrs = tempDestinations.rightSqrs
-        let topSqrs = tempDestinations.topSqrs
+        let tempDestinations = calcRookMov(currentIndex);
 
-        // This is checking for piece blockages at all sides of the rooks movement
-        for (let i = 0; i < leftSqrs.length; i++) { // left squares
-            const index = leftSqrs[i];
-            if (board.boardArr[index] !== 0) { // Check if the square is occupied
-                leftSqrs.splice(i + 1); // Remove all squares after the occupied square
-                break; // Stop checking further
-            }
-        }
-        for (let i = 0; i < rightSqrs.length; i++) { // right squares
-            const index = rightSqrs[i];
-            if (board.boardArr[index] !== 0) { // Check if the square is occupied
-                rightSqrs.splice(i + 1); // Remove all squares after the occupied square
-                break; // Stop checking further
-            }
-        }
-
-        // top
-        
-        
-        
-        console.log(topSqrs)
-        possibleDestinations = [...tempDestinations.bottomSqrs, ...leftSqrs, ...rightSqrs, ...topSqrs]
+        removeBlockedSquares(tempDestinations.leftSqrs);
+        removeBlockedSquares(tempDestinations.rightSqrs);
+        removeBlockedSquares(tempDestinations.topSqrs);
+        removeBlockedSquares(tempDestinations.bottomSqrs);
+        possibleDestinations = [...tempDestinations.bottomSqrs, ...tempDestinations.leftSqrs, ...tempDestinations.rightSqrs, ...tempDestinations.topSqrs];
 
     } else if (pieceType[1] == 'N') { // if it's a Knight
         possibleDestinations = [...calcKnightMov(currentIndex)]
@@ -210,14 +190,43 @@ const getPossibleMoves = (pieceType, currentIndex) => {
         possibleDestinations = [...calcKingMov(currentIndex)]
 
     } else if (pieceType[1] == 'B') { // if it's a Bishop
-        possibleDestinations = [...calcBishopMov(currentIndex)]
+        let tempDestinations = calcBishopMov(currentIndex);
+
+        removeBlockedSquares(tempDestinations.trSqrs);
+        removeBlockedSquares(tempDestinations.tlSqrs);
+        removeBlockedSquares(tempDestinations.brSqrs);
+        removeBlockedSquares(tempDestinations.blSqrs);
+
+        possibleDestinations = [...tempDestinations.trSqrs, ...tempDestinations.tlSqrs, ...tempDestinations.brSqrs, ...tempDestinations.blSqrs];
 
     } else if (pieceType[1] == 'Q') { // if it's a Queen
-        possibleDestinations = [...calcRookMov(currentIndex), ...calcBishopMov(currentIndex)]
+        let tempStraightDestinations = calcRookMov(currentIndex);
+        let tempDiagonalDestinations = calcBishopMov(currentIndex); 
+
+        removeBlockedSquares(tempStraightDestinations.leftSqrs);
+        removeBlockedSquares(tempStraightDestinations.rightSqrs);
+        removeBlockedSquares(tempStraightDestinations.topSqrs);
+        removeBlockedSquares(tempStraightDestinations.bottomSqrs);  
+        
+        removeBlockedSquares(tempDiagonalDestinations.trSqrs);
+        removeBlockedSquares(tempDiagonalDestinations.tlSqrs);
+        removeBlockedSquares(tempDiagonalDestinations.brSqrs);
+        removeBlockedSquares(tempDiagonalDestinations.blSqrs);
+        
+        possibleDestinations = [
+            ...tempStraightDestinations.bottomSqrs, 
+            ...tempStraightDestinations.leftSqrs, 
+            ...tempStraightDestinations.rightSqrs, 
+            ...tempStraightDestinations.topSqrs,
+
+            ...tempDiagonalDestinations.trSqrs, 
+            ...tempDiagonalDestinations.tlSqrs, 
+            ...tempDiagonalDestinations.brSqrs, 
+            ...tempDiagonalDestinations.blSqrs
+        ];
 
     } else if (pieceType[1] == 'P') { // if it's a Pawn
         possibleDestinations = [...calcPawnMov(currentIndex, pieceType[0])]
-
     }
 
     return possibleDestinations;
@@ -260,7 +269,7 @@ function getSqre(i) {
     }
 }
 
-// the exact opposite of getSqre() takes x and y as arguments
+// the exact opposite of getSqre(), takes x and y as arguments
 // and returns the corresponding boardIndex
 function getBoardIndex(x, y) {
     // Calculate row and column numbers based on pixel coordinates

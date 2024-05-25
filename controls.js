@@ -4,7 +4,7 @@ let isDrag = false
 let isDown = false
 let isUp = true
 
-let whiteTurn = false
+let whiteTurn = false // change this to decide who starts first (false = black, true = white)
 let possibleSqres = []
 let prevSqrIndex = null
 let draggedPiece = null
