@@ -22,7 +22,7 @@ function calcRookMov(currentIndex) {
         bottomSqrs: vSqrsBelow,
         leftSqrs: hSqrsLeft,
         rightSqrs: hSqrsRight
-    }
+    };
 }
 
 function calcBishopMov(currentIndex) {
@@ -72,7 +72,7 @@ function calcBishopMov(currentIndex) {
     // return [...trSqrs, ...brSqrs, ...tlSqrs, ...blSqrs].filter(s => s !== currentIndex) // remove the current square itself from the list
 }
 
-function calcKingMov(currentIndex) {
+function calcKingMov(currentIndex, piece) {
     const sqrs = [];
     const row = Math.floor(currentIndex / 8);
     const col = currentIndex % 8;
@@ -88,10 +88,12 @@ function calcKingMov(currentIndex) {
     if (row < 7 && col > 0) { sqrs.push(currentIndex + 7); } // Bottom-left
     if (row < 7 && col < 7) { sqrs.push(currentIndex + 9); } // Bottom-right
 
-    return sqrs;
+    return sqrs.filter(index => {
+        return board.boardArr[index][0] !== piece[0]; // filter out occupied squares with the same piece color
+    });
 }
 
-function calcKnightMov(currentIndex) {
+function calcKnightMov(currentIndex, piece) {
     const squares = [];
     const row = Math.floor(currentIndex / 8);
     const col = currentIndex % 8;
@@ -115,7 +117,9 @@ function calcKnightMov(currentIndex) {
         }
     }
 
-    return squares;
+    return squares.filter(index => {
+        return board.boardArr[index][0] !== piece[0]; // filter out occupied squares with the same piece color
+    });
 }
 
 function calcPawnMov(currentIndex, side) {
@@ -160,12 +164,16 @@ function calcPawnCapture(currentIndex, side) {
     return sqrs;
 }
 
-function removeBlockedSquares(sideSqrs) {
+function removeBlockedSquares(sideSqrs, piece, currentIndex) {
     // This is checking for piece blockages at all sides of the rooks movement
+
     for (let i = 0; i < sideSqrs.length; i++) { // side squares
         const index = sideSqrs[i];
-        if (board.boardArr[index] !== 0) { // Check if the square is occupied
+        if (board.boardArr[index] !== 0) { // Check if the square is occupied 
             sideSqrs.splice(i + 1); // Remove all squares after the occupied square
+            if (board.boardArr[index][0] == piece[0] && i !== currentIndex) { // if the piece on the occupied square is the same type as the piece and is not the piece itself
+                sideSqrs.splice(i);
+            }
             break; // Stop checking further
         }
     }
@@ -177,56 +185,58 @@ const getPossibleMoves = (pieceType, currentIndex) => {
     if (pieceType[1] == 'R') { // If it's a Rook
         let tempDestinations = calcRookMov(currentIndex);
 
-        removeBlockedSquares(tempDestinations.leftSqrs);
-        removeBlockedSquares(tempDestinations.rightSqrs);
-        removeBlockedSquares(tempDestinations.topSqrs);
-        removeBlockedSquares(tempDestinations.bottomSqrs);
+        removeBlockedSquares(tempDestinations.leftSqrs, pieceType, currentIndex);
+        removeBlockedSquares(tempDestinations.rightSqrs, pieceType, currentIndex);
+        removeBlockedSquares(tempDestinations.topSqrs, pieceType, currentIndex);
+        removeBlockedSquares(tempDestinations.bottomSqrs, pieceType, currentIndex);
         possibleDestinations = [...tempDestinations.bottomSqrs, ...tempDestinations.leftSqrs, ...tempDestinations.rightSqrs, ...tempDestinations.topSqrs];
 
     } else if (pieceType[1] == 'N') { // if it's a Knight
-        possibleDestinations = [...calcKnightMov(currentIndex)]
+        let tempDestinations = calcKnightMov(currentIndex, pieceType);
+       
+        possibleDestinations = [...tempDestinations];
 
     } else if (pieceType[1] == 'K') { // if it's a King
-        possibleDestinations = [...calcKingMov(currentIndex)]
+        possibleDestinations = [...calcKingMov(currentIndex, pieceType)];
 
     } else if (pieceType[1] == 'B') { // if it's a Bishop
         let tempDestinations = calcBishopMov(currentIndex);
 
-        removeBlockedSquares(tempDestinations.trSqrs);
-        removeBlockedSquares(tempDestinations.tlSqrs);
-        removeBlockedSquares(tempDestinations.brSqrs);
-        removeBlockedSquares(tempDestinations.blSqrs);
+        removeBlockedSquares(tempDestinations.trSqrs, pieceType, currentIndex);
+        removeBlockedSquares(tempDestinations.tlSqrs, pieceType, currentIndex);
+        removeBlockedSquares(tempDestinations.brSqrs, pieceType, currentIndex);
+        removeBlockedSquares(tempDestinations.blSqrs, pieceType, currentIndex);
 
         possibleDestinations = [...tempDestinations.trSqrs, ...tempDestinations.tlSqrs, ...tempDestinations.brSqrs, ...tempDestinations.blSqrs];
 
     } else if (pieceType[1] == 'Q') { // if it's a Queen
         let tempStraightDestinations = calcRookMov(currentIndex);
-        let tempDiagonalDestinations = calcBishopMov(currentIndex); 
+        let tempDiagonalDestinations = calcBishopMov(currentIndex);
 
-        removeBlockedSquares(tempStraightDestinations.leftSqrs);
-        removeBlockedSquares(tempStraightDestinations.rightSqrs);
-        removeBlockedSquares(tempStraightDestinations.topSqrs);
-        removeBlockedSquares(tempStraightDestinations.bottomSqrs);  
-        
-        removeBlockedSquares(tempDiagonalDestinations.trSqrs);
-        removeBlockedSquares(tempDiagonalDestinations.tlSqrs);
-        removeBlockedSquares(tempDiagonalDestinations.brSqrs);
-        removeBlockedSquares(tempDiagonalDestinations.blSqrs);
-        
+        removeBlockedSquares(tempStraightDestinations.leftSqrs, pieceType, currentIndex);
+        removeBlockedSquares(tempStraightDestinations.rightSqrs, pieceType, currentIndex);
+        removeBlockedSquares(tempStraightDestinations.topSqrs, pieceType, currentIndex);
+        removeBlockedSquares(tempStraightDestinations.bottomSqrs, pieceType, currentIndex);
+
+        removeBlockedSquares(tempDiagonalDestinations.trSqrs, pieceType, currentIndex);
+        removeBlockedSquares(tempDiagonalDestinations.tlSqrs, pieceType, currentIndex);
+        removeBlockedSquares(tempDiagonalDestinations.brSqrs, pieceType, currentIndex);
+        removeBlockedSquares(tempDiagonalDestinations.blSqrs, pieceType, currentIndex);
+
         possibleDestinations = [
-            ...tempStraightDestinations.bottomSqrs, 
-            ...tempStraightDestinations.leftSqrs, 
-            ...tempStraightDestinations.rightSqrs, 
+            ...tempStraightDestinations.bottomSqrs,
+            ...tempStraightDestinations.leftSqrs,
+            ...tempStraightDestinations.rightSqrs,
             ...tempStraightDestinations.topSqrs,
 
-            ...tempDiagonalDestinations.trSqrs, 
-            ...tempDiagonalDestinations.tlSqrs, 
-            ...tempDiagonalDestinations.brSqrs, 
+            ...tempDiagonalDestinations.trSqrs,
+            ...tempDiagonalDestinations.tlSqrs,
+            ...tempDiagonalDestinations.brSqrs,
             ...tempDiagonalDestinations.blSqrs
         ];
 
     } else if (pieceType[1] == 'P') { // if it's a Pawn
-        possibleDestinations = [...calcPawnMov(currentIndex, pieceType[0])]
+        possibleDestinations = [...calcPawnMov(currentIndex, pieceType[0])];
     }
 
     return possibleDestinations;
@@ -256,17 +266,17 @@ const highlight = (possibleMoves) => {
 
 // i: board index from the boardArr property in board class
 function getSqre(i) {
-    const row = Math.floor(i / 8)
-    const col = i % 8
-    const x = col * 60
-    const y = row * 60
+    const row = Math.floor(i / 8);
+    const col = i % 8;
+    const x = col * 60;
+    const y = row * 60;
 
     return {
         row: row,
         col: col,
         x: x,
         y: y
-    }
+    };
 }
 
 // the exact opposite of getSqre(), takes x and y as arguments

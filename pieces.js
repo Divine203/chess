@@ -1,6 +1,6 @@
 class Pieces {
     constructor() {
-        this.pieceScale = 50
+        this.pieceScale = 50;
 
         // piece type's sprite coordinates for drawing
         this.type = {
@@ -17,13 +17,13 @@ class Pieces {
             bB: { id: 'bB', cx: 858, cy: 429, cw: 424, ch: 429 },
             bQ: { id: 'bQ', cx: 426, cy: 429, cw: 424, ch: 429 },
             bK: { id: 'bK', cx: 0, cy: 429, cw: 424, ch: 429 },
-        }
+        };
     }
 
     // sqr: [{x: 0, y: 0}]
     drawPiece(type, sqr) {
-        let sqrCenterX = sqr[0].x + (60/2)
-        let sqrCenterY = sqr[0].y + (60/2)
+        let sqrCenterX = sqr[0].x + (60/2);
+        let sqrCenterY = sqr[0].y + (60/2);
 
         ctx.drawImage(sprite,
             type.cx,
@@ -33,8 +33,8 @@ class Pieces {
             sqrCenterX - this.pieceScale/2,
             sqrCenterY - this.pieceScale/2,
             this.pieceScale, this.pieceScale
-        )    
+        );
     }
 }
 
-pieces = new Pieces()
+pieces = new Pieces();
