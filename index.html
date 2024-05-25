@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            background-color: black;
+            margin: 0;
+            padding: 0;
+        }
+        .board-cont div {
+            position: absolute;
+            /* animation: appear 1s ease-in-out 0s forwards; */
+        }
+        @keyframes appear {
+            from {
+               transform: scale(0);
+            } 
+            to {
+               transform: scale(1);
+            }
+        }
+        .game canvas {
+            position: relative;
+            z-index: 999;
+        }
+    </style>
+    <title>chess</title>
+</head>
+<body>
+    <div class="game">
+        <canvas></canvas>
+        <div class="board-cont"></div>
+    </div>
+   
+
+    <script src="general.js"></script>
+    <script src="board.js"></script>
+    <script src="pieces.js"></script>
+    <script src="utils.js"></script>
+    
+    <script src="main.js"></script>
+    <script src="controls.js"></script>
+</body>
+</html>
