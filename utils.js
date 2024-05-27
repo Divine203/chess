@@ -1,5 +1,4 @@
 // Utility functions we'll use in main file
-
 function calcRookMov(currentIndex) {
     let vSqrsAbove = [];
     let vSqrsBelow = [];
@@ -16,7 +15,6 @@ function calcRookMov(currentIndex) {
     for (let i = currentIndex - 1; i >= rowStart; i--) { hSqrsLeft.push(i); } // Hor squares to the left
     for (let i = currentIndex + 1; i <= rowEnd; i++) { hSqrsRight.push(i); } // Hor squares to the right
 
-    // return [...vSqrs, ...hSqrs]
     return {
         topSqrs: vSqrsAbove,
         bottomSqrs: vSqrsBelow,
@@ -68,8 +66,7 @@ function calcBishopMov(currentIndex) {
         tlSqrs: tlSqrs.filter(s => s !== currentIndex),
         blSqrs: blSqrs.filter(s => s !== currentIndex)
     };
-
-    // return [...trSqrs, ...brSqrs, ...tlSqrs, ...blSqrs].filter(s => s !== currentIndex) // remove the current square itself from the list
+    
 }
 
 function calcKingMov(currentIndex, piece) {
@@ -165,7 +162,7 @@ function calcPawnCapture(currentIndex, side) {
 }
 
 function removeBlockedSquares(sideSqrs, piece, currentIndex) {
-    // This is checking for piece blockages at all sides of the rooks movement
+    // This is checking for piece blockages at all sides of the rooks/bishop movement
 
     for (let i = 0; i < sideSqrs.length; i++) { // side squares
         const index = sideSqrs[i];
@@ -209,7 +206,7 @@ const getPossibleMoves = (pieceType, currentIndex) => {
 
         possibleDestinations = [...tempDestinations.trSqrs, ...tempDestinations.tlSqrs, ...tempDestinations.brSqrs, ...tempDestinations.blSqrs];
 
-    } else if (pieceType[1] == 'Q') { // if it's a Queen
+    } else if (pieceType[1] == 'Q') { // if it's a Queen (rook and bishop combo)
         let tempStraightDestinations = calcRookMov(currentIndex);
         let tempDiagonalDestinations = calcBishopMov(currentIndex);
 

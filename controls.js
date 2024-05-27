@@ -96,6 +96,10 @@ sprite.onload = () => {
                 board.boardArr[prevSqrIndex] = draggedPiece;
             }
             draggedPiece = null;
+            possibleSqres = []; 
+        } else if (draggedPiece !== null && possibleSqres.length <= 0) { // if there are no squares to move to
+            board.boardArr[prevSqrIndex] = draggedPiece;
+            draggedPiece = null;
             possibleSqres = [];
         }
         update();
