@@ -29,8 +29,12 @@ const update = () => {
         if (sqr !== 0) {
             let square = getSqre(i);
             pieces.drawPiece(pieces.type[sqr], [{ x: square.x, y: square.y }]);
+            ctx.fillStyle = 'black';
+            ctx.font = `10px comic sans ms`;
+            ctx.fillText(`${String(i)}`, square.x + 43, square.y + 10);
         }
     })
+    // highlight(blackDangerSqrs);
 }
 
 
