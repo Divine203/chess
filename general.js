@@ -43,12 +43,11 @@ const update = () => {
         }
     })
 
-    if(whiteTurn == false) {
-        if(playStockFishMove) {
-            stockfishAi.playStockfishMove();
-            playStockFishMove = false;
-        }
+    if(playStockFishMove) {
+        stockfishAi.playStockfishMove();
+        playStockFishMove = false;
     }
+    
 }
 
 const promptUser = (message) => {

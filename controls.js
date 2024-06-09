@@ -121,6 +121,7 @@ sprite.onload = () => {
             blackRightSideCastle();
             resetMovement();
             whiteTurn = !whiteTurn;
+            playStockFishMove = false;
             audio.playAudio(audio.sound.move);
         }
         if (canBlackCastleLeftSide(prevSqrIndex, draggedPiece, boardIndex)) {
@@ -128,6 +129,7 @@ sprite.onload = () => {
             blackLeftSideCastle();
             resetMovement();
             whiteTurn = !whiteTurn;
+            playStockFishMove = false;
             audio.playAudio(audio.sound.move);
         }
         // -------------------------------------------------------- //

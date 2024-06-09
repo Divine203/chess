@@ -54,7 +54,6 @@ class Stockfish {
     async playStockfishMove() {
         const fen = board.convertBoardToFEN();
         const bestMove = await this.getBestMove(fen); // Get best move from Stockfish
-        console.log(fen, bestMove);
         if (bestMove) {
             let extractedBestMove = this.extractBestMove(bestMove);
             if(`${extractedBestMove[0]}${extractedBestMove[1]}` == `${extractedBestMove[2]}${extractedBestMove[3]}`) {
