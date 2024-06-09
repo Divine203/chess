@@ -88,6 +88,7 @@ sprite.onload = () => {
             whiteTurn = draggedPiece[0] == 'w' ? true : false; // change the turn to the person that made the reversed move
             halfMoveCount--;
             fullMoveCount = roundToWhole(halfMoveCount / 2);
+            playStockFishMove = false;
         }
 
         function resetMovement() {
