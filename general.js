@@ -26,6 +26,8 @@ let playStockFishMove = false;
 let isCheck = false;
 
 let playerLost = false;
+let playerWon = false;
+let draw = false;
 
 // update() basically runs through the board array data in the board class
 // checks if their any 'non 0' values if there are, that means those squares arent empty
@@ -49,3 +51,11 @@ const update = () => {
     }
 }
 
+const promptUser = (message) => {
+    setTimeout(() => {
+        audio.playAudio(audio.sound.notify);
+        if (window.confirm(message)) {
+            window.location.reload(); // Refresh the page
+        }  
+    }, 1000);
+}

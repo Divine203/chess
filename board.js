@@ -91,15 +91,18 @@ class Board {
         const isCapture = this.boardArr[toIndex] == 0 ? false : true;
 
         // Get piece being moved
+        
         const piece = this.boardArr[fromIndex];
+        this.boardArr[fromIndex] = 0;
         if (!piece) {
             console.error(`No piece found at ${from}`);
             return;
         }
 
         // Update board
-        this.boardArr[fromIndex] = 0;
+       
         this.boardArr[toIndex] = piece;
+        
 
         
         // Increment move counts

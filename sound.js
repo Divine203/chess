@@ -18,6 +18,10 @@ class Audio_ {
             castle: {
                 file: new Audio(`${this.soundPath}castle.mp3`),
                 volume: 1
+            },
+            notify: {
+                file: new Audio(`${this.soundPath}notify.mp3`),
+                volume: 1
             }
         }
     }
