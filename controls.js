@@ -1,16 +1,18 @@
 // controls
+const stockfishAi = new Stockfish();
 
 let isDrag = false;
 let isDown = false;
 let isUp = true;
 
-let whiteTurn = true; // change this to decide who starts first (false = black, true = white)
+
 let possibleSqres = [];
 let prevSqrIndex = null;
 let draggedPiece = null;
 let capturedPiece = 0; // it's 0 not null cause it will be applied to board.boardArr
 
 let isStoreSqr = true;
+
 
 
 sprite.onload = () => {
@@ -84,6 +86,8 @@ sprite.onload = () => {
             board.boardArr[prevSqrIndex] = draggedPiece;
             board.boardArr[boardIndex] = capturedPiece;
             whiteTurn = draggedPiece[0] == 'w' ? true : false; // change the turn to the person that made the reversed move
+            halfMoveCount--;
+            fullMoveCount = roundToWhole(halfMoveCount / 2);
         }
 
         function resetMovement() {
@@ -95,39 +99,57 @@ sprite.onload = () => {
         whiteDangerSqrs = []; // reset danger squares
         blackDangerSqrs = []; // reset danger squares
 
-        // check for castling movement and if it is allow castling
+        // check for castling movement and if it is, allow castling
         if (canWhiteCastleRightSide(prevSqrIndex, draggedPiece, boardIndex)) {
+            isCastle = true;
             whiteRightSideCastle();
             resetMovement();
             whiteTurn = !whiteTurn;
+            playStockFishMove = true;
+            audio.playAudio(audio.sound.move);
         }
         if (canWhiteCastleLeftSide(prevSqrIndex, draggedPiece, boardIndex)) {
+            isCastle = true;
             whiteLeftSideCastle();
             resetMovement();
             whiteTurn = !whiteTurn;
+            playStockFishMove = true;
+            audio.playAudio(audio.sound.move);
         }
         if (canBlackCastleRightSide(prevSqrIndex, draggedPiece, boardIndex)) {
+            isCastle = true;
             blackRightSideCastle();
             resetMovement();
             whiteTurn = !whiteTurn;
+            audio.playAudio(audio.sound.move);
         }
         if (canBlackCastleLeftSide(prevSqrIndex, draggedPiece, boardIndex)) {
+            isCastle = true;
             blackLeftSideCastle();
             resetMovement();
             whiteTurn = !whiteTurn;
+            audio.playAudio(audio.sound.move);
         }
         // -------------------------------------------------------- //
 
         // once we release our piece we want to get its new location and chage it
         // update the boardArr data and update the game
         else if (draggedPiece !== null && possibleSqres.length > 0) {
+            let isCapture = board.boardArr[boardIndex] == 0 ? false : true;
             for (let i = 0; i < possibleSqres.length; i++) {
                 if (boardIndex == possibleSqres[i]) {
                     capturedPiece = board.boardArr[boardIndex] !== 0 ? board.boardArr[boardIndex] : 0; // if we captured a piece
-
                     board.boardArr[boardIndex] = draggedPiece;
                     board.boardArr[prevSqrIndex] = 0;
+             
                     whiteTurn = !whiteTurn; // switch turns
+                    halfMoveCount++;
+                    fullMoveCount = roundToWhole(halfMoveCount / 2);
+
+
+                    if (whiteTurn == false) playStockFishMove = true;
+                    else playStockFishMove = false;
+
                     if (board.boardArr[boardIndex][1] == 'P') { // if it's a pawn
                         pawnsThatHaveMovedPastOnce.push(boardIndex); // add it to the list of pawns moved more than once
                     }
@@ -140,16 +162,32 @@ sprite.onload = () => {
                     // check if the king is on check
                     findWhiteDangerSqrs();
                     findBlackDangerSqrs();
+
                     if (whiteTurn == false) {
+                         // find out if the move the human made is a check
+                        if(getPossibleMoves(draggedPiece, boardIndex).includes(board.boardArr.indexOf('bK'))) {
+                            if(isCheck == false) isCheck = true;
+                        } else {
+                            isCheck = false;
+                        }
+                        //
                         if (whiteDangerSqrs.includes(board.boardArr.indexOf('wK'))) { // if the current square of the wK is among the danger squares
                             reverseMovement(); // reverse the movement until they have resolved the check
                         }
                     } else {
+                        playStockFishMove = false;
                         if (blackDangerSqrs.includes(board.boardArr.indexOf('bK'))) { // if the current square of the bK is among the danger squares
                             reverseMovement(); // reverse the movement until they have resolved the check
                         }
                     }
 
+                    // play the right audios
+                    if(isCheck == false) {
+                        if (isCapture) audio.playAudio(audio.sound.capture);
+                        else audio.playAudio(audio.sound.move);
+                    } else {
+                        audio.playAudio(audio.sound.check);
+                    }
                 }
             }
             // if the square were trying to move to isnt part of the possibleMoves

@@ -125,16 +125,16 @@ function calcPawnMov(currentIndex, side) {
 
     if (side == 'w') {
         if (row > 0) {  // Check for squares above
-            sqrs.push(currentIndex - 8);
+            if(board.boardArr[currentIndex - 8] == 0) sqrs.push(currentIndex - 8);
             if (!pawnsThatHaveMovedPastOnce.includes(currentIndex)) { // if the pawn is NOT among the list of pawns that have moved more than once
-                sqrs.push(currentIndex - 16);
+                if(board.boardArr[currentIndex - 16] == 0) sqrs.push(currentIndex - 16);
             }
         }
     } else {
         if (row < 7) {  // Check for squares below
-            sqrs.push(currentIndex + 8);
+            if(board.boardArr[currentIndex + 8] == 0) sqrs.push(currentIndex + 8);
             if (!pawnsThatHaveMovedPastOnce.includes(currentIndex)) {
-                sqrs.push(currentIndex + 16);
+                if(board.boardArr[currentIndex + 16] == 0) sqrs.push(currentIndex + 16);
             }
         }
     }
@@ -199,6 +199,9 @@ function whiteRightSideCastle() {
     board.boardArr[62] = 'wK';
     board.boardArr[60] = 0;
     board.boardArr[63] = 0;
+
+    isWhiteRightCastleLegal = false;
+    isWhiteLeftCastleLegal = false;
 }
 
 function whiteLeftSideCastle() {
@@ -206,6 +209,9 @@ function whiteLeftSideCastle() {
     board.boardArr[58] = 'wK';
     board.boardArr[60] = 0;
     board.boardArr[56] = 0;
+
+    isWhiteRightCastleLegal = false;
+    isWhiteLeftCastleLegal = false;
 }
 
 function blackRightSideCastle() {
@@ -213,6 +219,9 @@ function blackRightSideCastle() {
     board.boardArr[5] = 'bR';
     board.boardArr[4] = 0;
     board.boardArr[7] = 0;
+
+    isBlackRightCastleLegal = false;
+    isBlackLeftCastleLegal = false;
 }
 
 function blackLeftSideCastle() {
@@ -220,8 +229,19 @@ function blackLeftSideCastle() {
     board.boardArr[3] = 'bR';
     board.boardArr[4] = 0;
     board.boardArr[0] = 0;
+
+    isBlackRightCastleLegal = false;
+    isBlackLeftCastleLegal = false;
 }
 
+
+function roundToWhole(num) {
+    const decimalPart = num % 1;
+    if (decimalPart === 0.5 || decimalPart === -0.5) {
+        return Math.floor(num); // For positive numbers .5, rounds down, for negative numbers -.5, rounds up
+    }
+    return Math.round(num);
+}
 
 
 const getPossibleMoves = (pieceType, currentIndex) => {

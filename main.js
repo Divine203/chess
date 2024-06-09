@@ -20,22 +20,5 @@ const drawBoard = () => {
     }
 }
 
-// update() basically runs through the board array data in the board class
-// checks if their any 'non 0' values if there are, that means those squares arent empty
-// so it uses the getSqre function to get the square's details (co ordinates in px) and then draws the piece on that square
-// using the drawPiece method from the Pieces class 
-const update = () => {
-    board.boardArr.forEach((sqr, i) => {
-        if (sqr !== 0) {
-            let square = getSqre(i);
-            pieces.drawPiece(pieces.type[sqr], [{ x: square.x, y: square.y }]);
-            ctx.fillStyle = 'black';
-            ctx.font = `10px comic sans ms`;
-            ctx.fillText(`${String(i)}`, square.x + 43, square.y + 10);
-        }
-    })
-    // highlight(blackDangerSqrs);
-}
-
 
 
