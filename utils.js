@@ -66,7 +66,7 @@ function calcBishopMov(currentIndex) {
         tlSqrs: tlSqrs.filter(s => s !== currentIndex),
         blSqrs: blSqrs.filter(s => s !== currentIndex)
     };
-    
+
 }
 
 function calcKingMov(currentIndex, piece) {
@@ -124,28 +124,40 @@ function calcPawnMov(currentIndex, side) {
     const row = Math.floor(currentIndex / 8);
 
     if (side == 'w') {
-        if (row > 0) { sqrs.push(currentIndex - 8); } // Check for squares above
+        if (row > 0) {  // Check for squares above
+            if(board.boardArr[currentIndex - 8] == 0) sqrs.push(currentIndex - 8);
+            if (!pawnsThatHaveMovedPastOnce.includes(currentIndex)) { // if the pawn is NOT among the list of pawns that have moved more than once
+                if(board.boardArr[currentIndex - 16] == 0) sqrs.push(currentIndex - 16);
+            }
+        }
     } else {
-        if (row < 7) { sqrs.push(currentIndex + 8); } // Check for squares below
+        if (row < 7) {  // Check for squares below
+            if(board.boardArr[currentIndex + 8] == 0) sqrs.push(currentIndex + 8);
+            if (!pawnsThatHaveMovedPastOnce.includes(currentIndex)) {
+                if(board.boardArr[currentIndex + 16] == 0) sqrs.push(currentIndex + 16);
+            }
+        }
     }
     return sqrs
 }
 
-function calcPawnMov2Steps(currentIndex, side) {
+function calcPawnCaptureIfThereIsAPiece(currentIndex, side) {
     const sqrs = [];
     const row = Math.floor(currentIndex / 8);
+    const col = currentIndex % 8;
 
-    if (row === 6) { // If the pawn is at its initial position
-        const oneStepUp = currentIndex - 8;
-        const twoStepsUp = currentIndex - 16;
-
-        sqrs.push(oneStepUp);
-
-        // Add the square two steps up if it's within the board
-        if (twoStepsUp >= 0) {
-            sqrs.push(twoStepsUp);
+    if (row > 0 && col > 0) { // Top-left
+        let topleft = side == 'w' ? currentIndex - 9 : currentIndex + 9; // check for white or black
+        if (board.boardArr[topleft] !== 0 && board.boardArr[topleft][0].toLowerCase() !== side.toLowerCase()) {
+            sqrs.push(topleft);
         }
     }
+    if (row > 0 && col < 7) {
+        let topRight = side == 'w' ? currentIndex - 7 : currentIndex + 7;
+        if (board.boardArr[topRight] !== 0 && board.boardArr[topRight][0].toLowerCase() !== side.toLowerCase()) {
+            sqrs.push(topRight);
+        }
+    } // Top-right
 
     return sqrs;
 }
@@ -155,8 +167,14 @@ function calcPawnCapture(currentIndex, side) {
     const row = Math.floor(currentIndex / 8);
     const col = currentIndex % 8;
 
-    if (row > 0 && col > 0) { sqrs.push(currentIndex - 9); } // Top-left
-    if (row > 0 && col < 7) { sqrs.push(currentIndex - 7); } // Top-right
+    if (row > 0 && col > 0) { // Top-left
+        let topleft = side == 'w' ? currentIndex - 9 : currentIndex + 9; // check for white or black
+        sqrs.push(topleft);
+    }
+    if (row > 0 && col < 7) {
+        let topRight = side == 'w' ? currentIndex - 7 : currentIndex + 7;
+        sqrs.push(topRight);
+    } // Top-right
 
     return sqrs;
 }
@@ -176,6 +194,56 @@ function removeBlockedSquares(sideSqrs, piece, currentIndex) {
     }
 }
 
+function whiteRightSideCastle() {
+    board.boardArr[61] = 'wR';
+    board.boardArr[62] = 'wK';
+    board.boardArr[60] = 0;
+    board.boardArr[63] = 0;
+
+    isWhiteRightCastleLegal = false;
+    isWhiteLeftCastleLegal = false;
+}
+
+function whiteLeftSideCastle() {
+    board.boardArr[59] = 'wR';
+    board.boardArr[58] = 'wK';
+    board.boardArr[60] = 0;
+    board.boardArr[56] = 0;
+
+    isWhiteRightCastleLegal = false;
+    isWhiteLeftCastleLegal = false;
+}
+
+function blackRightSideCastle() {
+    board.boardArr[6] = 'bK';
+    board.boardArr[5] = 'bR';
+    board.boardArr[4] = 0;
+    board.boardArr[7] = 0;
+
+    isBlackRightCastleLegal = false;
+    isBlackLeftCastleLegal = false;
+}
+
+function blackLeftSideCastle() {
+    board.boardArr[2] = 'bK';
+    board.boardArr[3] = 'bR';
+    board.boardArr[4] = 0;
+    board.boardArr[0] = 0;
+
+    isBlackRightCastleLegal = false;
+    isBlackLeftCastleLegal = false;
+}
+
+
+function roundToWhole(num) {
+    const decimalPart = num % 1;
+    if (decimalPart === 0.5 || decimalPart === -0.5) {
+        return Math.floor(num); // For positive numbers .5, rounds down, for negative numbers -.5, rounds up
+    }
+    return Math.round(num);
+}
+
+
 const getPossibleMoves = (pieceType, currentIndex) => {
     let possibleDestinations = [];  // Calculate possible destination indices
 
@@ -190,12 +258,20 @@ const getPossibleMoves = (pieceType, currentIndex) => {
 
     } else if (pieceType[1] == 'N') { // if it's a Knight
         let tempDestinations = calcKnightMov(currentIndex, pieceType);
-       
+
         possibleDestinations = [...tempDestinations];
 
     } else if (pieceType[1] == 'K') { // if it's a King
-        possibleDestinations = [...calcKingMov(currentIndex, pieceType)];
+        let tempDestinations = [...calcKingMov(currentIndex, pieceType)];
 
+        // we need to check if the any of the squares we can move the king to is on check (danger). If so, we remove
+        // them from the list of possible destinations
+        if (pieceType[0] == 'b') {
+            tempDestinations = tempDestinations.filter(sqr => !blackDangerSqrs.includes(sqr));
+        } else {
+            tempDestinations = tempDestinations.filter(sqr => !whiteDangerSqrs.includes(sqr));
+        }
+        possibleDestinations = tempDestinations;
     } else if (pieceType[1] == 'B') { // if it's a Bishop
         let tempDestinations = calcBishopMov(currentIndex);
 
@@ -233,15 +309,15 @@ const getPossibleMoves = (pieceType, currentIndex) => {
         ];
 
     } else if (pieceType[1] == 'P') { // if it's a Pawn
-        possibleDestinations = [...calcPawnMov(currentIndex, pieceType[0])];
+        possibleDestinations = [...calcPawnMov(currentIndex, pieceType[0]), ...calcPawnCaptureIfThereIsAPiece(currentIndex, pieceType[0])];
     }
 
     return possibleDestinations;
 }
 
-const highlight = (possibleMoves) => {
+const highlight = (squares) => {
     // Loop through possible move indices
-    possibleMoves.forEach(index => {
+    squares.forEach(index => {
         // Calculate row and column numbers based on index
         const row = Math.floor(index / 8);
         const col = index % 8;
@@ -255,10 +331,6 @@ const highlight = (possibleMoves) => {
         ctx.fillRect(x, y, 60, 60); // Assuming each square is 60px by 60px
     });
 }
-
-
-
-
 
 
 // i: board index from the boardArr property in board class
@@ -288,4 +360,90 @@ function getBoardIndex(x, y) {
 
     // Return the board index
     return i;
+}
+
+
+
+const checkWhiteRightCastleLegality = (prevSqrIndex, draggedPiece) => {
+    if ((prevSqrIndex == 63 && draggedPiece == 'wR') || prevSqrIndex == 60 && draggedPiece == 'wK') {
+        isWhiteRightCastleLegal = false;
+    }
+}
+const canWhiteCastleRightSide = (prevSqrIndex, draggedPiece, boardIndex) => {
+    return ((prevSqrIndex == 60 && draggedPiece == 'wK') &&
+        (boardIndex == 63) &&
+        (board.boardArr[62] == 0 && board.boardArr[61] == 0) &&
+        isWhiteRightCastleLegal);
+}
+
+const checkWhiteLeftCastleLegality = (prevSqrIndex, draggedPiece) => {
+    if ((prevSqrIndex == 56 && draggedPiece == 'wR') || prevSqrIndex == 60 && draggedPiece == 'wK') {
+        isWhiteLeftCastleLegal = false;
+    }
+}
+const canWhiteCastleLeftSide = (prevSqrIndex, draggedPiece, boardIndex) => {
+    return ((prevSqrIndex == 60 && draggedPiece == 'wK') &&
+        (boardIndex == 56) &&
+        (board.boardArr[59] == 0 && board.boardArr[58] == 0 && board.boardArr[57] == 0) &&
+        isWhiteLeftCastleLegal);
+}
+
+
+
+const checkBlackRightCastleLegality = (prevSqrIndex, draggedPiece) => {
+    if ((prevSqrIndex == 7 && draggedPiece == 'bR') || prevSqrIndex == 4 && draggedPiece == 'bK') {
+        isBlackRightCastleLegal = false;
+    }
+}
+const canBlackCastleRightSide = (prevSqrIndex, draggedPiece, boardIndex) => {
+    return ((prevSqrIndex == 4 && draggedPiece == 'bK') &&
+        (boardIndex == 7) &&
+        (board.boardArr[6] == 0 && board.boardArr[5] == 0) &&
+        isBlackRightCastleLegal);
+}
+
+const checkBlackLeftCastleLegality = (prevSqrIndex, draggedPiece) => {
+    if ((prevSqrIndex == 0 && draggedPiece == 'bR') || prevSqrIndex == 4 && draggedPiece == 'bK') {
+        isBlackLeftCastleLegal = false;
+    }
+}
+const canBlackCastleLeftSide = (prevSqrIndex, draggedPiece, boardIndex) => {
+    return ((prevSqrIndex == 4 && draggedPiece == 'bK') &&
+        (boardIndex == 0) &&
+        (board.boardArr[1] == 0 && board.boardArr[2] == 0 && board.boardArr[3] == 0) &&
+        isBlackLeftCastleLegal);
+}
+
+
+
+const findDangerSqrs = (pieceSide) => {
+    board.boardArr.forEach((sqr, i) => {
+        if (sqr[0] == pieceSide && sqr[1].toLowerCase() !== 'p') {
+            let possibleMoves = getPossibleMoves(sqr, i);
+            for (let j = 0; j < possibleMoves.length; j++) {
+                if (pieceSide == 'b') {
+                    whiteDangerSqrs.push(possibleMoves[j]);
+                } else {
+                    blackDangerSqrs.push(possibleMoves[j]);
+                }
+            }
+        } else if (sqr[0] == pieceSide && sqr[1].toLowerCase() == 'p') {
+            let possibleCaptures = calcPawnCapture(i, pieceSide);
+            for (let k = 0; k < possibleCaptures.length; k++) {
+                if (pieceSide == 'b') {
+                    whiteDangerSqrs.push(possibleCaptures[k]);
+                } else {
+                    blackDangerSqrs.push(possibleCaptures[k]);
+                }
+            }
+        }
+    })
+}
+
+const findWhiteDangerSqrs = () => {
+    findDangerSqrs('b') // pass in the oponnets side
+}
+
+const findBlackDangerSqrs = () => {
+    findDangerSqrs('w') // pass in the oponnets side
 }
