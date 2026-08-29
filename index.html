@@ -1,62 +1,70 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body {
-            background-color: black;
-            margin: 0;
-            padding: 0;
-        }
-        .board-cont {
-            position: relative;
-            top: -484px;
-        }
-        .board-cont div {
-            position: absolute;
-            /* animation: appear 1s ease-in-out 0s forwards; */
-        }
-        @keyframes appear {
-            from {
-               transform: scale(0);
-            } 
-            to {
-               transform: scale(1);
-            }
-        }
-        .game--cont {
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-        }
-
-        .game canvas {
-            position: relative;
-            z-index: 999;
-        }
-    </style>
-    <title>chess</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link rel="icon" href="./android-chrome-512x512.png">
+<title>FreeChess - by Adam Kraus</title>
+<style>
+html,body{
+  margin:0;
+  padding:0;
+  width:100%;
+  height:100%;
+  background:#000;
+  overflow:hidden;
+  touch-action:none;
+}
+.game{
+  width:100vw;
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center; /* zentriert vertikal + horizontal */
+}
+.board-wrap{
+  width:480px;
+  height:480px;
+  position:relative;
+  transform-origin:center center;
+}
+#board{
+  width:100%;
+  height:100%;
+  display:block;
+  touch-action:none;
+}
+.board-cont{
+  position:absolute;
+  left:0;
+  top:0;
+  width:100%;
+  height:100%;
+  pointer-events:none;
+  z-index:1;
+}
+.board-cont div{position:absolute}
+</style>
 </head>
 <body>
-    <div class="game--cont">
-        <div class="game">
-            <canvas></canvas>
-            <div class="board-cont"></div>
-        </div>
-    </div>
-   
+<div class="game"><div class="board-wrap"><canvas id="board"></canvas><div class="board-cont"></div></div></div>
 
-    <script src="general.js"></script>
-    <script src="sound.js"></script>
-    <script src="stockfish.js"></script>
-    <script src="board.js"></script>
-    <script src="pieces.js"></script>
-    <script src="utils.js"></script>
-    
-    <script src="main.js"></script>
-    <script src="controls.js"></script>
+<!-- External libs -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+
+<!-- Core files -->
+<script src="utils.js?v=minimal"></script>
+<script src="pieces.js?v=minimal"></script>
+<script src="board.js?v=minimal"></script>
+<script src="rules.js?v=minimal"></script>
+<script src="general.js?v=minimal"></script>
+<script src="sound.js?v=minimal"></script>
+<script src="stockfish.js?v=minimal"></script>
+<script src="controls.js?v=minimal"></script>
+<script src="mobile.js?v=minimal"></script>
+<script src="game-ui.js?v=minimal"></script>
+<script src="stats.js?v=minimal"></script>
+<script src="main.js?v=minimal"></script>
+
 </body>
 </html>
